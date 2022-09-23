@@ -413,13 +413,13 @@ def create_tld(conn, tld_domain, program_name):
         else:
             if tld_domain.startswith("*."):
                 tld_domain =  tld_domain.replace('*.','')
-                sql = """INSERT INTO TLD_Domains(tld_domain, program_id, is_wildcard) VALUES(""" + "'" + tld_domain + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "' COLLATE NOCASE""),1"")"""
+                sql = """INSERT INTO TLD_Domains(tld_domain, program_id, is_wildcard) VALUES(""" + "'" + tld_domain.lower() + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "' COLLATE NOCASE""),1"")"""
             else:
-                sql = """INSERT INTO TLD_Domains(tld_domain, program_id, is_wildcard) VALUES(""" + "'" + tld_domain + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "' COLLATE NOCASE""),0"")"""
+                sql = """INSERT INTO TLD_Domains(tld_domain, program_id, is_wildcard) VALUES(""" + "'" + tld_domain.lower() + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "' COLLATE NOCASE""),0"")"""
             cur = conn.cursor()
             cur.execute(sql)
             conn.commit()
-            print(GREEN_COLOR + "[+] TLD Domain '" + tld_domain + "' added to the " + program_name + " program")
+            print(GREEN_COLOR + "[+] TLD Domain '" + tld_domain.lower() + "' added to the " + program_name + " program")
             return cur.lastrowid
 
 def create_subdomain(conn, subdomain, program_name):
@@ -435,13 +435,13 @@ def create_subdomain(conn, subdomain, program_name):
         if result:
             print(RED_COLOR + "[!] " + subdomain + " Subdomain already exist")
         else:
-            sql = """INSERT INTO Subdomains(subdomain, program_id) VALUES(""" + "'" + subdomain + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "'" + " COLLATE NOCASE""))"""
+            sql = """INSERT INTO Subdomains(subdomain, program_id) VALUES(""" + "'" + subdomain.lower() + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "'" + " COLLATE NOCASE""))"""
             cur = conn.cursor()
             cur.execute(sql)
             conn.commit()
-            print(GREEN_COLOR + "[+] '" + subdomain + "' added to the " + program_name + " program subdomain list.")
+            print(GREEN_COLOR + "[+] '" + subdomain.lower() + "' added to the " + program_name + " program subdomain list.")
             if args.Telegram:
-                telegram_bot_sendtext(subdomain + " added to the " + program_name + " program subdomain list.")
+                telegram_bot_sendtext(subdomain.lower() + " added to the " + program_name + " program subdomain list.")
             return cur.lastrowid
 
 def deleteRecord(conn, table, column, data):
