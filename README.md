@@ -57,44 +57,68 @@ options:
 ### Select from database:
 
 Show Organization: ```bbDB.py -sp```
+
 Show All TLD Domains: ```bbDB.py -st```
+
 Show TLD Domains by Organization: ```bbDB.py -st -p paypal```
+
 Show All Subdomains: ```bbDB.py -ss```
+
 Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com```
+
 Show Subdomains by Organization: ```bbDB.py -ss -p paypal```
+
 Run Dynamic select query: ```bbDB.py -sq 'select * from Organization'```
 
 ### CSV Export
 
 Save Organization: ```bbDB.py -sp -o results.csv```
+
 Save All TLD Domains: ```bbDB.py -st -o results.csv```
+
 Save TLD Domains by Organization: ```bbDB.py -st -p paypal -o results.csv```
+
 Save All Subdomains: ```bbDB.py -ss -o results.csv```
+
 Save Subdomains by Organization: ```bbDB.py -ss -p paypal -o results.csv```
+
 Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com -o results.csv```
+
 Save Dynamic select query results: ```bbDB.py -sq 'select * from Organization' -o results.csv```
 
 ### Insert into database
 
 Create Organization: ```bbDB.py -cp -p paypal```
+
 Create Organization from file: ```bbDB.py -cp -p Organization.txt -f```
+
 Create Organization from STDIN: ```cat organization-list.txt | bbDB.py -pp or echo PayPal | bbDB.py -pp```
+
 Create TLD Domain: ```bbDB.py -ct paypal.com -p paypal```
+
 Create TLD Domain from file: ```bbDB.py -ct tld.txt -p paypal -f```
+
 Create TLD Domain from STDIN: ```cat tld-list.txt | bbDB.py -pt -p paypal or echo paypal.com | bbDB.py -pt -p paypal```
+
 Create Subdomain: ```bbDB.py -cs admin.paypal.com -p paypal```
+
 Create Subdomain from file: ```bbDB.py -cs subdomains.txt -p paypal -f```
+
 Create Subdomain from STDIN: ```cat subdomain-list.txt | bbDB.py -ps -p paypal or echo paypal.com | bbDB.py -ps -p paypal```
 
 ### Search Database:
 
 Search Organization: ```bbDB.py -sp -t paypal```
+
 Search TLD Domains: ```bbDB.py -st -t paypal```
+
 Search Subdomains: ```bbDB.py -ss -t paypal```
 
 
 ### Remove from database:
 
 Remove Organization from DB: ```bbDB.py -sp -r paypal```
+
 Remove TLD domain from DB: ```bbDB.py -st -r paypal.com```
+
 Remove Subdomain from DB: ```bbDB.py -ss -r admin.paypal.com```
