@@ -51,10 +51,10 @@ options:
 ```
 
 
-## Usage Examples:
+## Usage Examples
 
 
-### Select from database:
+### Select from database
 
 Show Organization: ```bbDB.py -sp```
 
@@ -106,7 +106,7 @@ Create Subdomain from file: ```bbDB.py -cs subdomains.txt -p paypal -f```
 
 Create Subdomain from STDIN: ```cat subdomain-list.txt | bbDB.py -ps -p paypal or echo paypal.com | bbDB.py -ps -p paypal```
 
-### Search Database:
+### Search Database
 
 Search Organization: ```bbDB.py -sp -t paypal```
 
@@ -115,7 +115,7 @@ Search TLD Domains: ```bbDB.py -st -t paypal```
 Search Subdomains: ```bbDB.py -ss -t paypal```
 
 
-### Remove from database:
+### Remove from database
 
 Remove Organization from DB: ```bbDB.py -sp -r paypal```
 
