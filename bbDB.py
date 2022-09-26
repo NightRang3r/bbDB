@@ -9,6 +9,7 @@ import argparse
 import csv
 import requests
 import validators
+import tldextract
 from colorama import Fore, Style
 from colorama import init
 
@@ -39,64 +40,59 @@ def examples():
     print("Usage Examples:\n")
     print("Select from database:")
     print("=====================\n")
-    print("Show Programs: " + YELLOW_COLOR + sys.argv[0] + " -sp")
+    print("Show Organization: " + YELLOW_COLOR + sys.argv[0] + " -sp")
     print("Show All TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st")
-    print("Show TLD Domains by program: " + YELLOW_COLOR  + sys.argv[0] + " -st -p paypal")
+    print("Show TLD Domains by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -st -p paypal")
     print("Show All Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss")
-    print("Show Subdomains by program: " + YELLOW_COLOR  + sys.argv[0] + " -ss -p paypal")
-    print("Show All Resolved Subdomains: " + YELLOW_COLOR  + sys.argv[0] + " -sr")
-    print("Show Resolved Subdomains by program: " + YELLOW_COLOR  + sys.argv[0] + " -sr -p paypal")
-    print("Run Dynamic select query: " + YELLOW_COLOR + sys.argv[0] + " -sq 'select * from programs'\n")
+    print("Show Subdomains by TLD domain: " + YELLOW_COLOR + sys.argv[0] + " -tl paypal.com")
+    print("Show Subdomains by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -ss -p paypal")
+    print("Run Dynamic select query: " + YELLOW_COLOR + sys.argv[0] + " -sq 'select * from Organization'\n")
     print("CSV Export")
     print("==========\n")
-    print("Save Programs: " + YELLOW_COLOR + sys.argv[0] + " -sp -o results.csv")
+    print("Save Organization: " + YELLOW_COLOR + sys.argv[0] + " -sp -o results.csv")
     print("Save All TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st -o results.csv")
-    print("Save TLD Domains by program: " + YELLOW_COLOR + sys.argv[0] + " -st -p paypal -o results.csv")
+    print("Save TLD Domains by Organization: " + YELLOW_COLOR + sys.argv[0] + " -st -p paypal -o results.csv")
     print("Save All Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -o results.csv")
-    print("Save Subdomains by program: " + YELLOW_COLOR + sys.argv[0] + " -ss -p paypal -o results.csv")
-    print("Save All Resolved Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -sr -o results.csv")
-    print("Save Resolved Subdomains by program: " + YELLOW_COLOR + sys.argv[0] + " -sr -p paypal -o results.csv")
-    print("Save Dynamic select query results: " + YELLOW_COLOR + sys.argv[0] + " -sq 'select * from programs' -o results.csv" + "\n")
+    print("Save Subdomains by Organization: " + YELLOW_COLOR + sys.argv[0] + " -ss -p paypal -o results.csv")
+    print("Show Subdomains by TLD domain: " + YELLOW_COLOR + sys.argv[0] + " -tl paypal.com -o results.csv")
+    print("Save Dynamic select query results: " + YELLOW_COLOR + sys.argv[0] + " -sq 'select * from Organization' -o results.csv" + "\n")
     print("Insert into database")
     print("====================\n")
-    print("Create Program: " + YELLOW_COLOR + sys.argv[0] + " -cp -p paypal")
-    print("Create Program from file: " + YELLOW_COLOR + sys.argv[0] + " -cp -p programs.txt -f")
+    print("Create Organization: " + YELLOW_COLOR + sys.argv[0] + " -cp -p paypal")
+    print("Create Organization from file: " + YELLOW_COLOR + sys.argv[0] + " -cp -p Organization.txt -f")
+    print("Create Organization from STDIN: " + "cat organization-list.txt | " + YELLOW_COLOR + sys.argv[0] + " -pp " + "or" + " echo PayPal | " + sys.argv[0] + " -pp")
     print("Create TLD Domain: " + YELLOW_COLOR + sys.argv[0] + " -ct paypal.com -p paypal")
     print("Create TLD Domain from file: " + YELLOW_COLOR + sys.argv[0] + " -ct tld.txt -p paypal -f")
     print("Create TLD Domain from STDIN: " + "cat tld-list.txt | " + YELLOW_COLOR + sys.argv[0] + " -pt -p paypal " + "or" + " echo paypal.com | " + sys.argv[0] + " -pt -p paypal")
     print("Create Subdomain: " + YELLOW_COLOR + sys.argv[0] + " -cs admin.paypal.com -p paypal")
     print("Create Subdomain from file: " + YELLOW_COLOR + sys.argv[0] + " -cs subdomains.txt -p paypal -f")
-    print("Create Subdomain from STDIN: " + "cat subdomain-list.txt | " + YELLOW_COLOR + sys.argv[0] + " -ps -p paypal " + "or" + " echo paypal.com | " + sys.argv[0] + " -ps -p paypal")
-    print("Update subdomain IP Address from resolved list: " + YELLOW_COLOR + sys.argv[0] + " -cr paypal_resolved.txt -f")
-    print("Update subdomain IP Address from STDIN: " + "cat resolved.csv | " + YELLOW_COLOR + sys.argv[0] + " -pr " + "or" + " echo admin.paypal.com,172.16.1.1 | " + sys.argv[0] + " -pr")
+    print("Create Subdomain from STDIN: " + "cat subdomain-list.txt | " + YELLOW_COLOR + sys.argv[0] + " -ps -p paypal " + "or" + " echo paypal.com | " + sys.argv[0] + " -ps -p paypal\n")
     print("Search Database:")
     print("================\n")
-    print("Search Programs: " + YELLOW_COLOR + sys.argv[0] + " -sp -t paypal")
+    print("Search Organization: " + YELLOW_COLOR + sys.argv[0] + " -sp -t paypal")
     print("Search TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st -t paypal")
     print("Search Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -t paypal")
-    print("Search Resolved Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -sr -t paypal" )
     print("Remove from database:")
     print("=====================\n")
-    print("Remove Program from DB: " + YELLOW_COLOR +  sys.argv[0] + " -sp -r paypal")
+    print("Remove Organization from DB: " + YELLOW_COLOR +  sys.argv[0] + " -sp -r paypal")
     print("Remove TLD domain from DB: " + YELLOW_COLOR + sys.argv[0] + " -st -r paypal.com")
-    print("Remove Subdomain from DB: " + YELLOW_COLOR + sys.argv[0] + " -ss -r admin.paypal.com")
+    print("Remove Subdomain from DB: " + YELLOW_COLOR + sys.argv[0] + " -ss -r admin.paypal.com\n")
 
 parser = argparse.ArgumentParser(description='Manage BugBounty DB')
-parser.add_argument('-sp', '--select-program', required=False, dest='SelectProgram', help='List all Programs in the Programs table', action='store_true')
-parser.add_argument('-st', '--select-tld', dest='SelectTLD', help='List TLD Domains in the TLD_Domains table, Use -p to specify program name or without -p to return all', action='store_true')
-parser.add_argument('-ss', '--select-subdomain', dest='SelectSubdomain', help='List Subomains from the Subdomains table, Use -p to specify program name or without -p to return all', action='store_true')
-parser.add_argument('-sr', '--select-resolved', dest='SelectResolved', help='List only resolved subdomains from the Subdomains table, Use -p to specify program name or without -p to return all', action='store_true')
+parser.add_argument('-sp', '--select-Organization', required=False, dest='SelectOrganization', help='List all Organizations in the Organization table', action='store_true')
+parser.add_argument('-st', '--select-tld', dest='SelectTLD', help='List TLD Domains in the TLD_Domains table, Use -p to specify Organization name or without -p to return all', action='store_true')
+parser.add_argument('-ss', '--select-subdomain', dest='SelectSubdomain', help='List Subomains from the Subdomains table, Use -p to specify Organization name or without -p to return all', action='store_true')
 parser.add_argument('-sq', '--select-query', dest='SelectQuery', help='Excute a custom SQL query')
-parser.add_argument('-cp', '--create-program', required=False, dest='CreateProgram', help='Insert a new record(s) to the Programs table', action='store_true')
+parser.add_argument('-cp', '--create-organization', required=False, dest='CreateOrganization', help='Insert a new record(s) to the Organizations table', action='store_true')
 parser.add_argument('-ct', '--create-tld', required=False, dest='CreateTLD', help='Insert a new record(s) to the TLD_Domains table')
 parser.add_argument('-cs', '--create-subdomain', required=False, dest='CreateSubdomain', help='Insert a new record(s) to the Subdomains table')
-parser.add_argument('-cr', '--add-resolved', required=False, dest='addResolved', help='Update existing subdomain(s) with an IP address')
+parser.add_argument('-pp', '--pipe-organization', dest='pipeOrg', help='Insert a new record(s) to the organization table from stdin', required=False, action='store_true')
 parser.add_argument('-pt', '--pipe-tld', dest='pipeTLD', help='Insert a new record(s) to the TLD_Domains table from stdin', required=False, action='store_true')
 parser.add_argument('-ps', '--pipe-subdomain', dest='pipeSubdomains', help='Insert a new record(s) to the Subdomains table from stdin', required=False, action='store_true')
-parser.add_argument('-pr', '--pipe-resolved', dest='pipeResolved', help='Update existing subdomain(s) with an IP address from stdin', required=False, action='store_true')
 parser.add_argument('-c', '--count', dest='countResults', help='Display records count', required=False, action='store_true')
-parser.add_argument('-p', '--program-name', dest='ProgramName', help='Set Program Names, or all', required=False)
+parser.add_argument('-p', '--organization-name', dest='OrganizationName', help='Set Organization Names, or all', required=False)
 parser.add_argument('-t', '--search-term', dest='SearchTerm', help='Search table', required=False)
+parser.add_argument('-tl', '--tld-domain', dest='TLDomain', help='Filter by TLD domain', required=False)
 parser.add_argument('-f', '--file', dest='FileName', help='Input file', required=False, action='store_true')
 parser.add_argument('-o', '--output-csv', dest='CSVoutput', help='Save results to CSV file', required=False)
 parser.add_argument('-r', '--remove', dest='removeRecord', help='Delete a record from database', required=False)
@@ -166,10 +162,10 @@ def query(conn, query):
             except Error as e:
                 print("[!] " , e)
 
-def select_all_programs(conn):
+def select_all_organizations(conn):
     if args.CSVoutput:
         cur = conn.cursor()
-        cur.execute("SELECT program_name FROM Programs ORDER BY program_name ASC")
+        cur.execute("SELECT organization_name FROM organization ORDER BY organization_name ASC")
         try:
             with open(args.CSVoutput, "w") as csv_file:
                 csv_writer = csv.writer(csv_file, delimiter=",")
@@ -181,7 +177,7 @@ def select_all_programs(conn):
     if args.SearchTerm: 
         cur = conn.cursor()
         search_term =('%' + args.SearchTerm + '%',)
-        cur.execute("SELECT program_name FROM Programs WHERE program_name LIKE ? COLLATE NOCASE", (search_term))
+        cur.execute("SELECT organization_name FROM organization WHERE organization_name LIKE ? COLLATE NOCASE", (search_term))
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -192,7 +188,7 @@ def select_all_programs(conn):
             print(RED_COLOR + "[!] No results!")
     else:
         cur = conn.cursor()
-        cur.execute("SELECT program_name FROM Programs ORDER BY program_name ASC")
+        cur.execute("SELECT organization_name FROM organization ORDER BY organization_name ASC")
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -205,7 +201,7 @@ def select_all_programs(conn):
 def select_all_tld(conn):
     if args.CSVoutput:
         cur = conn.cursor()
-        cur.execute("SELECT tld_domain, program_name FROM TLD_Domains join Programs USING (program_id) ORDER BY program_id ASC")
+        cur.execute("SELECT domain, organization_name FROM domains join organization USING (organization_id) ORDER BY organization_id ASC")
         try:
             with open(args.CSVoutput, "w") as csv_file:
                 csv_writer = csv.writer(csv_file, delimiter=",")
@@ -217,7 +213,7 @@ def select_all_tld(conn):
     if args.SearchTerm:
         search_term =('%' + args.SearchTerm + '%',)
         cur = conn.cursor()
-        cur.execute("SELECT tld_domain, program_name FROM TLD_Domains join Programs USING (program_id) WHERE tld_domain LIKE ? COLLATE NOCASE", (search_term))
+        cur.execute("SELECT domain, organization_name FROM domains join organization USING (organization_id) WHERE domain LIKE ? COLLATE NOCASE", (search_term))
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -228,7 +224,7 @@ def select_all_tld(conn):
             print(RED_COLOR + "[!] No results!")
     else:
         cur = conn.cursor()
-        cur.execute("SELECT tld_domain, program_name FROM TLD_Domains join Programs USING (program_id) ORDER BY program_id ASC")
+        cur.execute("SELECT domain, organization_name FROM domains join organization USING (organization_id) ORDER BY organization_id ASC")
         rows = cur.fetchall()
         
         if rows:
@@ -242,7 +238,7 @@ def select_all_tld(conn):
 def select_all_subdomains(conn):
     if args.CSVoutput:
         cur = conn.cursor()
-        cur.execute("SELECT subdomain, program_name FROM Subdomains join Programs USING (program_id) ORDER BY program_id ASC")
+        cur.execute("SELECT subdomain, organization_name FROM Subdomains join organization USING (organization_id) ORDER BY organization_id ASC")
         try:
             with open(args.CSVoutput, "w") as csv_file:
                 csv_writer = csv.writer(csv_file, delimiter=",")
@@ -254,7 +250,7 @@ def select_all_subdomains(conn):
     if args.SearchTerm:
         search_term =('%' + args.SearchTerm + '%',)
         cur = conn.cursor()
-        cur.execute("SELECT subdomain, program_name FROM Subdomains join Programs USING (program_id) WHERE subdomain LIKE ? COLLATE NOCASE", (search_term))
+        cur.execute("SELECT subdomain, organization_name FROM Subdomains join organization USING (organization_id) WHERE subdomain LIKE ? COLLATE NOCASE", (search_term))
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -265,7 +261,7 @@ def select_all_subdomains(conn):
             print(RED_COLOR + "[!] No results!")
     else:
         cur = conn.cursor()
-        cur.execute("SELECT subdomain, program_name FROM Subdomains join Programs USING (program_id) ORDER BY program_id ASC")
+        cur.execute("SELECT subdomain, organization_name FROM Subdomains join organization USING (organization_id) ORDER BY organization_id ASC")
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -275,47 +271,10 @@ def select_all_subdomains(conn):
         else:
             print(RED_COLOR + "[!] No results!")
 
-def select_all_resolved(conn):
-    if args.CSVoutput:
-            cur = conn.cursor()
-            cur.execute("SELECT subdomain, ip_address, program_name FROM Subdomains join Programs USING (program_id) WHERE is_resolved=1 ORDER BY program_id ASC")
-            try:
-                with open(args.CSVoutput, "w") as csv_file:
-                    csv_writer = csv.writer(csv_file, delimiter=",")
-                    csv_writer.writerow([i[0] for i in cur.description])
-                    csv_writer.writerows(cur)
-                print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
-            except:
-                print(RED_COLOR + "[!] Error opening file!")
-    if args.SearchTerm:
-        search_term =('%' + args.SearchTerm + '%',)
-        cur = conn.cursor()
-        cur.execute("SELECT subdomain, ip_address, program_name FROM Subdomains join Programs USING (program_id) WHERE subdomain LIKE ? COLLATE NOCASE AND is_resolved=1", (search_term))
-        rows = cur.fetchall()
-        if rows:
-            for row in rows:
-                print(GREEN_COLOR + row[0] + ', ' + row[1] + ', ' + row[2])
-            if (args.countResults):
-                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
-        else:
-            print(RED_COLOR + "[!] No results!")
-    else:
-        cur = conn.cursor()
-        cur.execute("SELECT subdomain, ip_address, program_name FROM Subdomains join Programs USING (program_id) WHERE is_resolved=1 ORDER BY program_id ASC")
-        rows = cur.fetchall()
-        if rows:
-            for row in rows:
-                print(GREEN_COLOR + row[0] + ', ' + row[1])
-            if (args.countResults):
-                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
-        else:
-            print(RED_COLOR + "[!] No results!")
-
-
-def select_all_tld_by_program(conn, program_name):
+def select_all_tld_by_organization(conn, organization_name):
     if args.CSVoutput:
         cur = conn.cursor()
-        cur.execute("SELECT tld_domain from TLD_Domains join Programs USING (program_id) where Programs.program_name =? COLLATE NOCASE", ([program_name]))
+        cur.execute("SELECT domain from domains join organization USING (organization_id) where organization.organization_name =? COLLATE NOCASE", ([organization_name]))
         try:
             with open(args.CSVoutput, "w") as csv_file:
                 csv_writer = csv.writer(csv_file, delimiter=",")
@@ -326,7 +285,7 @@ def select_all_tld_by_program(conn, program_name):
              print(RED_COLOR + "[!] Error opening file!")
     else:
         cur = conn.cursor()
-        cur.execute("SELECT tld_domain from TLD_Domains join Programs USING (program_id) where Programs.program_name =? COLLATE NOCASE", ([program_name]))
+        cur.execute("SELECT domain from domains join organization USING (organization_id) where organization.organization_name =? COLLATE NOCASE", ([organization_name]))
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -336,10 +295,10 @@ def select_all_tld_by_program(conn, program_name):
         else:
             print(RED_COLOR + "[!] No results!")
 
-def select_all_subdomains_by_program(conn, program_name):
+def select_all_subdomains_by_organization(conn, organization_name):
     if args.CSVoutput:
         cur = conn.cursor()
-        cur.execute("SELECT subdomain from Subdomains join Programs USING (program_id) where Programs.program_name =? COLLATE NOCASE", ([program_name]))
+        cur.execute("SELECT subdomain from Subdomains join organization USING (organization_id) where organization.organization_name =? COLLATE NOCASE", ([organization_name]))
         try:
             with open(args.CSVoutput, "w") as csv_file:
                 csv_writer = csv.writer(csv_file, delimiter=",")
@@ -348,9 +307,36 @@ def select_all_subdomains_by_program(conn, program_name):
             print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
         except:
              print(RED_COLOR + "[!] Error opening file!")
+             
     else:
         cur = conn.cursor()
-        cur.execute("SELECT subdomain from Subdomains join Programs USING (program_id) where Programs.program_name =? COLLATE NOCASE", ([program_name]))
+        cur.execute("SELECT subdomain from Subdomains join organization USING (organization_id) where organization.organization_name =? COLLATE NOCASE", ([organization_name]))
+        rows = cur.fetchall()
+        if rows:
+            for row in rows:
+                print(GREEN_COLOR + row[0])
+            if (args.countResults):
+                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
+        else:
+            print(RED_COLOR + "[!] No results!")
+            
+def select_all_subdomains_by_tld(conn, domain):
+    if args.CSVoutput:
+        cur = conn.cursor()
+        cur.execute("SELECT subdomain from subdomains where domain_id=(select domain_id from domains where domain =" + "'" + domain + "')")
+        try:
+            with open(args.CSVoutput, "w") as csv_file:
+                csv_writer = csv.writer(csv_file, delimiter=",")
+                csv_writer.writerow([i[0] for i in cur.description])
+                csv_writer.writerows(cur)
+            print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
+        except:
+             print(RED_COLOR + "[!] Error opening file!")
+             
+             
+    else:
+        cur = conn.cursor()
+        cur.execute("SELECT subdomain from subdomains where domain_id=(select domain_id from domains where domain =" + "'" + domain + "')")
         rows = cur.fetchall()
         if rows:
             for row in rows:
@@ -360,89 +346,74 @@ def select_all_subdomains_by_program(conn, program_name):
         else:
             print(RED_COLOR + "[!] No results!")
 
-def select_all_resolved_by_program(conn, program_name):
-    if args.CSVoutput:
-        cur = conn.cursor()
-        cur.execute("SELECT subdomain, ip_address from Subdomains JOIN Programs USING (program_id) WHERE Programs.program_name =? COLLATE NOCASE AND is_resolved=1", ([program_name]))
-        try:
-            with open(args.CSVoutput, "w") as csv_file:
-                csv_writer = csv.writer(csv_file, delimiter=",")
-                csv_writer.writerow([i[0] for i in cur.description])
-                csv_writer.writerows(cur)
-            print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
-        except:
-             print(RED_COLOR + "[!] Error opening file!")
-    else:
-        cur = conn.cursor()
-        cur.execute("SELECT subdomain, ip_address FROM Subdomains JOIN Programs USING (program_id) WHERE Programs.program_name =? COLLATE NOCASE AND is_resolved=1", ([program_name]))
-        rows = cur.fetchall()
-        if rows:
-            for row in rows:
-                print(GREEN_COLOR + row[0] + ',' + row[1])
-            if (args.countResults):
-                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
-        else:
-            print(RED_COLOR + "[!] No results!")
-
-def create_program(conn, program_name):
+def create_organization(conn, organization_name):
     cur = conn.cursor()
-    cur.execute("SELECT program_name FROM Programs WHERE program_name=? COLLATE NOCASE", ([program_name]))
+    cur.execute("SELECT organization_name FROM organization WHERE organization_name=? COLLATE NOCASE", ([organization_name]))
     result = cur.fetchone()
     if result:
-        print(RED_COLOR + "[!] " +  program_name + " Program already exist")
+        print(RED_COLOR + "[!] " +  organization_name + " Organization already exist")
     else:
-        sql = '''INSERT INTO Programs(program_name) VALUES(?)'''
+        sql = '''INSERT INTO organization(organization_name) VALUES(?)'''
         cur = conn.cursor()
-        cur.execute(sql, [program_name])
+        cur.execute(sql, [organization_name])
         conn.commit()
-        print(GREEN_COLOR + "[+] " + program_name + " program added to database.")
+        print(GREEN_COLOR + "[+] " + organization_name + " organization added to database.")
         return cur.lastrowid
 
-def create_tld(conn, tld_domain, program_name):
+def create_tld(conn, domain, organization_name):
     cur = conn.cursor()
-    cur.execute("SELECT program_name FROM Programs WHERE program_name=? COLLATE NOCASE", ([program_name]))
+    cur.execute("SELECT organization_name FROM organization WHERE organization_name=? COLLATE NOCASE", ([organization_name]))
     result = cur.fetchone()
     if not result:
-        print(RED_COLOR + "[!] Program not valid!")
+        print(RED_COLOR + "[!] Organization not valid!")
     else:
         cur = conn.cursor()
-        cur.execute("SELECT tld_domain FROM TLD_Domains WHERE tld_domain=? COLLATE NOCASE", ([tld_domain.replace('*.','')]))
+        cur.execute("SELECT domain FROM domains WHERE domain=? COLLATE NOCASE", ([domain.replace('*.','')]))
         result = cur.fetchone()
         if result:
-            print(RED_COLOR + "[!] " + tld_domain + " TLD Domain already exist")
+            print(RED_COLOR + "[!] " + domain + " TLD Domain already exist")
         else:
-            if tld_domain.startswith("*."):
-                tld_domain =  tld_domain.replace('*.','')
-                sql = """INSERT INTO TLD_Domains(tld_domain, program_id, is_wildcard) VALUES(""" + "'" + tld_domain.lower() + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "' COLLATE NOCASE""),1"")"""
+            if domain.startswith("*."):
+                domain =  domain.replace('*.','')
+                sql = """INSERT INTO domains(domain, organization_id, is_wildcard) VALUES(""" + "'" + domain.lower() + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "' COLLATE NOCASE""),1"")"""
             else:
-                sql = """INSERT INTO TLD_Domains(tld_domain, program_id, is_wildcard) VALUES(""" + "'" + tld_domain.lower() + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "' COLLATE NOCASE""),0"")"""
+                sql = """INSERT INTO domains(domain, organization_id, is_wildcard) VALUES(""" + "'" + domain.lower() + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "' COLLATE NOCASE""),0"")"""
             cur = conn.cursor()
             cur.execute(sql)
             conn.commit()
-            print(GREEN_COLOR + "[+] TLD Domain '" + tld_domain.lower() + "' added to the " + program_name + " program")
+            print(GREEN_COLOR + "[+] TLD Domain '" + domain.lower() + "' added to the " + organization_name + " organization")
             return cur.lastrowid
 
-def create_subdomain(conn, subdomain, program_name):
+def create_subdomain(conn, subdomain, organization_name):
     cur = conn.cursor()
-    cur.execute("SELECT program_name FROM Programs WHERE program_name=? COLLATE NOCASE", ([program_name]))
+    cur.execute("SELECT organization_name FROM organization WHERE organization_name=? COLLATE NOCASE", ([organization_name]))
     result = cur.fetchone()
     if not result:
-        print(RED_COLOR + "[!] Program not valid!")
+        print(RED_COLOR + "[!] Organization not valid!")
+    
     else:
         cur = conn.cursor()
         cur.execute("SELECT subdomain FROM Subdomains WHERE subdomain=? COLLATE NOCASE", ([subdomain]))
         result = cur.fetchone()
         if result:
             print(RED_COLOR + "[!] " + subdomain + " Subdomain already exist")
+        
         else:
-            sql = """INSERT INTO Subdomains(subdomain, program_id) VALUES(""" + "'" + subdomain.lower() + "'" + """, (SELECT program_id FROM Programs WHERE program_name=""" + "'" + program_name + "'" + " COLLATE NOCASE""))"""
             cur = conn.cursor()
-            cur.execute(sql)
-            conn.commit()
-            print(GREEN_COLOR + "[+] '" + subdomain.lower() + "' added to the " + program_name + " program subdomain list.")
-            if args.Telegram:
-                telegram_bot_sendtext(subdomain.lower() + " added to the " + program_name + " program subdomain list.")
-            return cur.lastrowid
+            cur.execute("SELECT domain FROM domains WHERE domain=? COLLATE NOCASE", ([tldextract.extract(subdomain).registered_domain]))
+            result = cur.fetchone()
+            if not result:
+                print(RED_COLOR + "[!] TLD doamin not in DB, not adding subdomain!")
+            else:
+                sql = """INSERT INTO subdomains(subdomain, organization_id, domain_id) VALUES(""" + "'" + subdomain.lower() + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "'" + " COLLATE NOCASE), (SELECT domain_id FROM domains WHERE domain=""" + "'" +  tldextract.extract(subdomain).registered_domain + "'" + "))"""
+
+                cur = conn.cursor()
+                cur.execute(sql)
+                conn.commit()
+                print(GREEN_COLOR + "[+] '" + subdomain.lower() + "' added to the " + organization_name + " organization subdomain list.")
+                if args.Telegram:
+                    telegram_bot_sendtext(subdomain.lower() + " added to the " + organization_name + " organization subdomain list.")
+                return cur.lastrowid
 
 def deleteRecord(conn, table, column, data):
     cur = conn.cursor()
@@ -480,47 +451,49 @@ def main():
         
     conn = create_connection(DB_PATH)
     with conn:
-        if (args.SelectProgram):
+        if (args.SelectOrganization):
             if args.removeRecord:
-                deleteRecord(conn, "Programs", "program_name", args.removeRecord)
+                deleteRecord(conn, "organization", "organization_name", args.removeRecord)
             else:
-                select_all_programs(conn)
+                select_all_organizations(conn)
         if (args.SelectTLD):
             if args.removeRecord:
-                deleteRecord(conn, "TLD_Domains", "tld_domain", args.removeRecord)
-            elif (args.ProgramName is None or args.ProgramName=='all'):
+                deleteRecord(conn, "domains", "domain", args.removeRecord)
+            elif (args.OrganizationName is None or args.OrganizationName=='all'):
                select_all_tld(conn)
             else:
-                select_all_tld_by_program(conn, args.ProgramName)
+                select_all_tld_by_organization(conn, args.OrganizationName)
         if (args.SelectSubdomain):
             if args.removeRecord:
                 deleteRecord(conn, "Subdomains", "subdomain", args.removeRecord)
-            elif (args.ProgramName is None or args.ProgramName=='all'):
+            elif (args.OrganizationName is None or args.OrganizationName=='all'):
                 select_all_subdomains(conn)
             else:
-                select_all_subdomains_by_program(conn,  args.ProgramName)
+                select_all_subdomains_by_organization(conn,  args.OrganizationName)
+        if(args.TLDomain):
+            select_all_subdomains_by_tld(conn, args.TLDomain)
 
         if (args.SelectQuery):
              query(conn, args.SelectQuery)
-        if (args.CreateProgram):
-            if (args.ProgramName is None):
-                print(RED_COLOR + '[!] Please use -p to specify program name')
+        if (args.CreateOrganization):
+            if (args.OrganizationName is None):
+                print(RED_COLOR + '[!] Please use -p to specify organization name')
             else:
                 if args.FileName:
                     try:
-                        f = open(args.ProgramName, 'rt')
+                        f = open(args.OrganizationName, 'rt')
                         l = f.readline()
                         while (l):
-                            create_program(conn, l.strip())
+                            create_organization(conn, l.strip())
                             l = f.readline()
                         f.close()
                     except:
                         print(RED_COLOR + "[!] Error opening file!")
                 else:
-                   create_program(conn, args.ProgramName)
+                   create_organization(conn, args.OrganizationName)
         if (args.CreateTLD):
-            if (args.ProgramName is None):
-                print(RED_COLOR + '[!] Please use -p to specify program name')
+            if (args.OrganizationName is None):
+                print(RED_COLOR + '[!] Please use -p to specify organization name')
             else:
                 if args.FileName:
                     try:
@@ -530,7 +503,7 @@ def main():
                             if not ValidateSubdomain(l.strip()):
                                 print(RED_COLOR + "[!] Invalid domain name " + "'" + l.strip() + "'")
                             else:
-                                create_tld(conn, l.strip(), args.ProgramName)
+                                create_tld(conn, l.strip(), args.OrganizationName)
                             l = f.readline()
                         f.close()
                     except:
@@ -539,10 +512,10 @@ def main():
                     if not ValidateSubdomain(args.CreateTLD):
                         print(RED_COLOR + "[!] Invalid domain name " + "'" + args.CreateTLD + "'")
                     else:
-                        create_tld(conn, args.CreateTLD, args.ProgramName)
+                        create_tld(conn, args.CreateTLD, args.OrganizationName)
         if (args.CreateSubdomain):
-            if (args.ProgramName is None):
-                print(RED_COLOR +'[!] Please use -p to specify program name')
+            if (args.OrganizationName is None):
+                print(RED_COLOR +'[!] Please use -p to specify organization name')
             else:
                 if args.FileName:
                     try:
@@ -552,7 +525,7 @@ def main():
                             if not ValidateSubdomain(l.strip()):
                                 print(RED_COLOR + "[!] Invalid domain name " + "'" + l.strip() + "'")
                             else:
-                                create_subdomain(conn,  l.strip(), args.ProgramName)
+                                create_subdomain(conn,  l.strip(), args.OrganizationName)
                             l = f.readline()
                         f.close()
                     except:
@@ -561,91 +534,33 @@ def main():
                     if not ValidateSubdomain(args.CreateSubdomain):
                         print(RED_COLOR + "[!] Invalid domain name " + "'" + args.CreateSubdomain + "'")
                     else:
-                        create_subdomain(conn, args.CreateSubdomain, args.ProgramName)
+                        create_subdomain(conn, args.CreateSubdomain, args.OrganizationName)
         if (args.pipeSubdomains):
-            if (args.ProgramName is None):
-                print(RED_COLOR + '[!] Please use -p to specify program name')
+            if (args.OrganizationName is None):
+                print(RED_COLOR + '[!] Please use -p to specify organization name')
             else:
                 for line in sys.stdin:
                     if not ValidateSubdomain(line.strip()):
                         print(RED_COLOR + "[!] Invalid domain name " + "'" + line.strip() + "'")
                     else:
-                        create_subdomain(conn, line.strip(), args.ProgramName)
+                        create_subdomain(conn, line.strip(), args.OrganizationName)
+        if (args.pipeOrg):
+            if (args.pipeOrg is None):
+                print(RED_COLOR + '[!] Please specify organization name')
+            else:
+                for line in sys.stdin:
+                    create_organization(conn, line.strip())
+                        
         if (args.pipeTLD):
-            if (args.ProgramName is None):
-                print(RED_COLOR + '[!] Please use -p to specify program name')
+            if (args.OrganizationName is None):
+                print(RED_COLOR + '[!] Please use -p to specify organization name')
             else:
                 for line in sys.stdin:
                     if not ValidateSubdomain(line.strip()):
                         print(RED_COLOR + "[!] Invalid domain name " + "'" + line.strip() + "'")
                     else:
-                        create_tld(conn, line.strip(), args.ProgramName)
-        if (args.addResolved):
-            if args.FileName:
-                try:
-                    f = open(args.addResolved, 'rt')
-                    l = f.readline()
-                    while (l):
-                        csv_line = l.strip()
-                        csv_clean = csv_line.split(",")
-                        csv_subdomain = csv_clean[0]
-                        csv_ip =  csv_clean[1]
-                        cur = conn.cursor()
-                        cur.execute("SELECT subdomain_id, subdomain, ip_address, is_resolved FROM Subdomains WHERE subdomain=? COLLATE NOCASE", ([csv_subdomain]))
-                        result = cur.fetchone()             
-                        if result:
-                            ip_address = result[2]
-                            subdomain_id = result[0]
-                            if not ip_address:
-                                sql = ("UPDATE Subdomains SET ip_address=" + "'" + csv_ip + "'" + ", is_resolved=1 WHERE subdomain_id=" + str(subdomain_id))
-                                if args.Telegram:
-                                    telegram_bot_sendtext("IP Address " + csv_ip + " updated for " + csv_subdomain)
-                                print(GREEN_COLOR + "[+] Updating IP Address " + csv_ip + " for " + csv_subdomain)
-                                cur = conn.cursor()
-                                cur.execute(sql)
-                                conn.commit()
-                            else:
-                                print(RED_COLOR + "[!] No update for " + csv_subdomain)
-                        l = f.readline()
-                    f.close()
-                    if result == None:
-                        print(GREEN_COLOR + "[!] Nothing to update or subdomains are not in table")
-                except Exception as e:
-                    print(e)
-
-        if (args.pipeResolved):
-                    try:
-                        for line in sys.stdin:
-                            csv_line = line.strip()
-                            csv_clean = csv_line.split(",")
-                            csv_subdomain = csv_clean[0]
-                            csv_ip =  csv_clean[1]
-                            cur = conn.cursor()
-                            cur.execute("SELECT subdomain_id, subdomain, ip_address, is_resolved FROM Subdomains WHERE subdomain=? COLLATE NOCASE", ([csv_subdomain]))
-                            result = cur.fetchone()
-                            if result:
-                                ip_address = result[2]
-                                subdomain_id = result[0]
-                                if not ip_address:
-                                    sql = ("UPDATE Subdomains SET ip_address=" + "'" + csv_ip + "'" + ", is_resolved=1 WHERE subdomain_id=" + str(subdomain_id))
-                                    if args.Telegram:
-                                        telegram_bot_sendtext("IP Address " + csv_ip + " updated for " + csv_subdomain)
-                                    print(GREEN_COLOR + "[+] Updating IP Address " + csv_ip + " for " + csv_subdomain)
-                                    cur = conn.cursor()
-                                    cur.execute(sql)
-                                    conn.commit()
-                                else:
-                                    print(RED_COLOR + "[!] No update for " + csv_subdomain)
-                        if result == None:
-                            print(RED_COLOR + "[!] Nothing to update or subdomains are not in table")        
-                    except Exception as e:
-                        print(e)
-    
-        if(args.SelectResolved):
-            if (args.ProgramName is None or args.ProgramName=='all'):
-                select_all_resolved(conn)
-            else:
-                select_all_resolved_by_program(conn, args.ProgramName)
+                        create_tld(conn, line.strip(), args.OrganizationName)
+                        
 
 if __name__ == '__main__':
 
