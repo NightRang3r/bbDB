@@ -71,7 +71,7 @@ def examples():
     print("================\n")
     print("Search Organization: " + YELLOW_COLOR + sys.argv[0] + " -sp -t paypal")
     print("Search TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st -t paypal")
-    print("Search Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -t paypal")
+    print("Search Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -t paypal\n")
     print("Remove from database:")
     print("=====================\n")
     print("Remove Organization from DB: " + YELLOW_COLOR +  sys.argv[0] + " -sp -r paypal")

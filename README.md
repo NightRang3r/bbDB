@@ -53,81 +53,48 @@ options:
 
 ## Usage Examples:
 
+
 ### Select from database:
 
-Show Programs: ```bbDB.py -sp```
-
+Show Organization: ```bbDB.py -sp```
 Show All TLD Domains: ```bbDB.py -st```
-
-Show TLD Domains by program: ```bbDB.py -st -p paypal```
-
+Show TLD Domains by Organization: ```bbDB.py -st -p paypal```
 Show All Subdomains: ```bbDB.py -ss```
-
-Show Subdomains by program: ```bbDB.py -ss -p paypal```
-
-Show All Resolved Subdomains: ```bbDB.py -sr```
-
-Show Resolved Subdomains by program: ```bbDB.py -sr -p paypal```
-
-Run Dynamic select query: ```bbDB.py -sq 'select * from programs'```
+Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com```
+Show Subdomains by Organization: ```bbDB.py -ss -p paypal```
+Run Dynamic select query: ```bbDB.py -sq 'select * from Organization'```
 
 ### CSV Export
 
-Save Programs: ```bbDB.py -sp -o results.csv```
-
+Save Organization: ```bbDB.py -sp -o results.csv```
 Save All TLD Domains: ```bbDB.py -st -o results.csv```
-
-Save TLD Domains by program: ```bbDB.py -st -p paypal -o results.csv```
-
+Save TLD Domains by Organization: ```bbDB.py -st -p paypal -o results.csv```
 Save All Subdomains: ```bbDB.py -ss -o results.csv```
-
-Save Subdomains by program: ```bbDB.py -ss -p paypal -o results.csv```
-
-Save All Resolved Subdomains: ```bbDB.py -sr -o results.csv```
-
-Save Resolved Subdomains by program: ```bbDB.py -sr -p paypal -o results.csv```
-
-Save Dynamic select query results: ```bbDB.py -sq 'select * from programs' -o results.csv```
-
+Save Subdomains by Organization: ```bbDB.py -ss -p paypal -o results.csv```
+Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com -o results.csv```
+Save Dynamic select query results: ```bbDB.py -sq 'select * from Organization' -o results.csv```
 
 ### Insert into database
 
-Create Program: ```bbDB.py -cp -p paypal```
-
-Create Program from file: ```bbDB.py -cp -p programs.txt -f```
-
+Create Organization: ```bbDB.py -cp -p paypal```
+Create Organization from file: ```bbDB.py -cp -p Organization.txt -f```
+Create Organization from STDIN: ```cat organization-list.txt | bbDB.py -pp or echo PayPal | bbDB.py -pp```
 Create TLD Domain: ```bbDB.py -ct paypal.com -p paypal```
-
 Create TLD Domain from file: ```bbDB.py -ct tld.txt -p paypal -f```
-
 Create TLD Domain from STDIN: ```cat tld-list.txt | bbDB.py -pt -p paypal or echo paypal.com | bbDB.py -pt -p paypal```
-
 Create Subdomain: ```bbDB.py -cs admin.paypal.com -p paypal```
-
 Create Subdomain from file: ```bbDB.py -cs subdomains.txt -p paypal -f```
-
 Create Subdomain from STDIN: ```cat subdomain-list.txt | bbDB.py -ps -p paypal or echo paypal.com | bbDB.py -ps -p paypal```
-
-Update subdomain IP Address from resolved list: ```bbDB.py -cr paypal_resolved.txt -f```
-
-Update subdomain IP Address from STDIN: ```cat resolved.csv | bbDB.py -pr or echo admin.paypal.com,172.16.1.1 | bbDB.py -pr```
-
 
 ### Search Database:
 
-Search Programs: ```bbDB.py -sp -t paypal```
-
+Search Organization: ```bbDB.py -sp -t paypal```
 Search TLD Domains: ```bbDB.py -st -t paypal```
-
 Search Subdomains: ```bbDB.py -ss -t paypal```
-
-Search Resolved Subdomains: ```bbDB.py -sr -t paypal```
 
 
 ### Remove from database:
 
-Remove Program from DB: ```bbDB.py -sp -r paypal```
-
+Remove Organization from DB: ```bbDB.py -sp -r paypal```
 Remove TLD domain from DB: ```bbDB.py -st -r paypal.com```
-
 Remove Subdomain from DB: ```bbDB.py -ss -r admin.paypal.com```
