@@ -3,39 +3,44 @@ Simple Python Script to manage bugbounty programs and subdomains
 
 
 ```
-usage: bbDB.py [-h] [-sp] [-st] [-ss] [-sr] [-sq SELECTQUERY] [-cp] [-ct CREATETLD] [-cs CREATESUBDOMAIN] [-cr ADDRESOLVED] [-pt] [-ps] [-pr] [-c] [-p PROGRAMNAME] [-t SEARCHTERM] [-f] [-o CSVOUTPUT] [-r REMOVERECORD] [-q] [-nc] [-tg]
-               [-d DATABASE]
+usage: bbDB.py [-h] [-sp] [-st] [-ss] [-sq SELECTQUERY] [-si] [-cp] [-ct CREATETLD] [-cs CREATESUBDOMAIN] [-ci CREATEIPADDRESS] [-pi] [-pp] [-pt] [-ps] [-c] [-p ORGANIZATIONNAME] [-t SEARCHTERM] [-tl TLDOMAIN] [-f] [-o CSVOUTPUT]
+               [-r REMOVERECORD] [-q] [-nc] [-tg] [-d DATABASE]
 
 Manage BugBounty DB
 
 options:
   -h, --help            show this help message and exit
-  -sp, --select-program
-                        List all Programs in the Programs table
-  -st, --select-tld     List TLD Domains in the TLD_Domains table, Use -p to specify program name or without -p to return all
+  -sp, --select-Organization
+                        List all Organizations in the Organization table
+  -st, --select-tld     List TLD Domains in the TLD_Domains table, Use -p to specify Organization name or without -p to return all
   -ss, --select-subdomain
-                        List Subomains from the Subdomains table, Use -p to specify program name or without -p to return all
-  -sr, --select-resolved
-                        List only resolved subdomains from the Subdomains table, Use -p to specify program name or without -p to return all
+                        List Subomains from the Subdomains table, Use -p to specify Organization name or without -p to return all
   -sq SELECTQUERY, --select-query SELECTQUERY
                         Excute a custom SQL query
-  -cp, --create-program
-                        Insert a new record(s) to the Programs table
+  -si, --select-ipaddress
+                        List IP Addresses from the ip address table, Use -p to specify Organization name or without -p to return all
+  -cp, --create-organization
+                        Insert a new record(s) to the Organizations table
   -ct CREATETLD, --create-tld CREATETLD
                         Insert a new record(s) to the TLD_Domains table
   -cs CREATESUBDOMAIN, --create-subdomain CREATESUBDOMAIN
                         Insert a new record(s) to the Subdomains table
-  -cr ADDRESOLVED, --add-resolved ADDRESOLVED
-                        Update existing subdomain(s) with an IP address
+  -ci CREATEIPADDRESS, --create-ipaddress CREATEIPADDRESS
+                        Insert a new record(s) to the ip address table
+  -pi, --pipe-ipaddress
+                        Insert a ip to the ip address table from stdin
+  -pp, --pipe-organization
+                        Insert a new record(s) to the organization table from stdin
   -pt, --pipe-tld       Insert a new record(s) to the TLD_Domains table from stdin
   -ps, --pipe-subdomain
                         Insert a new record(s) to the Subdomains table from stdin
-  -pr, --pipe-resolved  Update existing subdomain(s) with an IP address from stdin
   -c, --count           Display records count
-  -p PROGRAMNAME, --program-name PROGRAMNAME
-                        Set Program Names, or all
+  -p ORGANIZATIONNAME, --organization-name ORGANIZATIONNAME
+                        Set Organization Names, or all
   -t SEARCHTERM, --search-term SEARCHTERM
                         Search table
+  -tl TLDOMAIN, --tld-domain TLDOMAIN
+                        Filter by TLD domain
   -f, --file            Input file
   -o CSVOUTPUT, --output-csv CSVOUTPUT
                         Save results to CSV file
@@ -46,15 +51,12 @@ options:
   -tg, --telegram       Send telegram message
   -d DATABASE, --db DATABASE
                         Set Database file name
-
-
 ```
 
 
 ## Usage Examples
 
-
-### Select from database
+### Select from database:
 
 Show Organization: ```bbDB.py -sp```
 
@@ -68,6 +70,10 @@ Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com```
 
 Show Subdomains by Organization: ```bbDB.py -ss -p paypal```
 
+Show All IP Addresses: ```bbDB.py -si -p```
+
+Show IP Addresses by Organization: ```bbDB.py -si -p paypal```
+
 Run Dynamic select query: ```bbDB.py -sq 'select * from Organization'```
 
 ### CSV Export
@@ -77,6 +83,10 @@ Save Organization: ```bbDB.py -sp -o results.csv```
 Save All TLD Domains: ```bbDB.py -st -o results.csv```
 
 Save TLD Domains by Organization: ```bbDB.py -st -p paypal -o results.csv```
+
+Save All IP Addresses: ```bbDB.py -si -o results.csv```
+
+Save IP Addresses by Organization: ```bbDB.py -si -p paypal -o results.csv```
 
 Save All Subdomains: ```bbDB.py -ss -o results.csv```
 
@@ -106,7 +116,11 @@ Create Subdomain from file: ```bbDB.py -cs subdomains.txt -p paypal -f```
 
 Create Subdomain from STDIN: ```cat subdomain-list.txt | bbDB.py -ps -p paypal or echo paypal.com | bbDB.py -ps -p paypal```
 
-### Search Database
+Insert IP Address: bbDB.py -ci 8.8.8.8 -p paypal
+Insert IP Address from file: bbDB.py -ci ips.txt -p paypal -f
+Insert IP Address from STDIN: cat ip-list.txt | bbDB.py -pi -p paypal or echo 8.8.8.8 | bbDB.py -pi -p paypal
+
+### Search Database:
 
 Search Organization: ```bbDB.py -sp -t paypal```
 
@@ -114,11 +128,15 @@ Search TLD Domains: ```bbDB.py -st -t paypal```
 
 Search Subdomains: ```bbDB.py -ss -t paypal```
 
+Search IP Addresses: ```bbDB.py -si -t 8.8.8.8```
 
-### Remove from database
+### Remove from database:
+
 
 Remove Organization from DB: ```bbDB.py -sp -r paypal```
 
 Remove TLD domain from DB: ```bbDB.py -st -r paypal.com```
 
 Remove Subdomain from DB: ```bbDB.py -ss -r admin.paypal.com```
+
+Remove IP Address from DB: ```bbDB.py -si -r 8.8.8.8```
