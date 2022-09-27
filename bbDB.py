@@ -46,12 +46,16 @@ def examples():
     print("Show All Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss")
     print("Show Subdomains by TLD domain: " + YELLOW_COLOR + sys.argv[0] + " -tl paypal.com")
     print("Show Subdomains by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -ss -p paypal")
+    print("Show All IP Addresses: " + YELLOW_COLOR  + sys.argv[0] + " -si -p")
+    print("Show IP Addresses by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -si -p paypal")
     print("Run Dynamic select query: " + YELLOW_COLOR + sys.argv[0] + " -sq 'select * from Organization'\n")
     print("CSV Export")
     print("==========\n")
     print("Save Organization: " + YELLOW_COLOR + sys.argv[0] + " -sp -o results.csv")
     print("Save All TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st -o results.csv")
     print("Save TLD Domains by Organization: " + YELLOW_COLOR + sys.argv[0] + " -st -p paypal -o results.csv")
+    print("Save All IP Addresses: " + YELLOW_COLOR + sys.argv[0] + " -si -o results.csv")
+    print("Save IP Addresses by Organization: " + YELLOW_COLOR + sys.argv[0] + " -si -p paypal -o results.csv")
     print("Save All Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -o results.csv")
     print("Save Subdomains by Organization: " + YELLOW_COLOR + sys.argv[0] + " -ss -p paypal -o results.csv")
     print("Show Subdomains by TLD domain: " + YELLOW_COLOR + sys.argv[0] + " -tl paypal.com -o results.csv")
@@ -67,25 +71,36 @@ def examples():
     print("Create Subdomain: " + YELLOW_COLOR + sys.argv[0] + " -cs admin.paypal.com -p paypal")
     print("Create Subdomain from file: " + YELLOW_COLOR + sys.argv[0] + " -cs subdomains.txt -p paypal -f")
     print("Create Subdomain from STDIN: " + "cat subdomain-list.txt | " + YELLOW_COLOR + sys.argv[0] + " -ps -p paypal " + "or" + " echo paypal.com | " + sys.argv[0] + " -ps -p paypal\n")
+    print("Insert IP Address: " + YELLOW_COLOR + sys.argv[0] + " -ci 8.8.8.8 -p paypal")
+    print("Insert IP Address from file: " + YELLOW_COLOR + sys.argv[0] + " -ci ips.txt -p paypal -f")
+    print("Insert IP Address from STDIN: " + "cat ip-list.txt | " + YELLOW_COLOR + sys.argv[0] + " -pi -p paypal " + "or" + " echo 8.8.8.8 | " + sys.argv[0] + " -pi -p paypal\n")
+
     print("Search Database:")
     print("================\n")
     print("Search Organization: " + YELLOW_COLOR + sys.argv[0] + " -sp -t paypal")
     print("Search TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st -t paypal")
-    print("Search Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -t paypal\n")
+    print("Search Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -t paypal")
+    print("Search IP Addresses: " + YELLOW_COLOR + sys.argv[0] + " -si -t 8.8.8.8\n")
+
     print("Remove from database:")
     print("=====================\n")
     print("Remove Organization from DB: " + YELLOW_COLOR +  sys.argv[0] + " -sp -r paypal")
     print("Remove TLD domain from DB: " + YELLOW_COLOR + sys.argv[0] + " -st -r paypal.com")
-    print("Remove Subdomain from DB: " + YELLOW_COLOR + sys.argv[0] + " -ss -r admin.paypal.com\n")
+    print("Remove Subdomain from DB: " + YELLOW_COLOR + sys.argv[0] + " -ss -r admin.paypal.com")
+    print("Remove IP Address from DB: " + YELLOW_COLOR + sys.argv[0] + " -si -r 8.8.8.8\n")
+
 
 parser = argparse.ArgumentParser(description='Manage BugBounty DB')
 parser.add_argument('-sp', '--select-Organization', required=False, dest='SelectOrganization', help='List all Organizations in the Organization table', action='store_true')
 parser.add_argument('-st', '--select-tld', dest='SelectTLD', help='List TLD Domains in the TLD_Domains table, Use -p to specify Organization name or without -p to return all', action='store_true')
 parser.add_argument('-ss', '--select-subdomain', dest='SelectSubdomain', help='List Subomains from the Subdomains table, Use -p to specify Organization name or without -p to return all', action='store_true')
 parser.add_argument('-sq', '--select-query', dest='SelectQuery', help='Excute a custom SQL query')
+parser.add_argument('-si', '--select-ipaddress', dest='SelectIPAddress', help='List IP Addresses from the ip address table, Use -p to specify Organization name or without -p to return all', action='store_true')
 parser.add_argument('-cp', '--create-organization', required=False, dest='CreateOrganization', help='Insert a new record(s) to the Organizations table', action='store_true')
 parser.add_argument('-ct', '--create-tld', required=False, dest='CreateTLD', help='Insert a new record(s) to the TLD_Domains table')
 parser.add_argument('-cs', '--create-subdomain', required=False, dest='CreateSubdomain', help='Insert a new record(s) to the Subdomains table')
+parser.add_argument('-ci', '--create-ipaddress', required=False, dest='CreateIPaddress', help='Insert a new record(s) to the ip address table')
+parser.add_argument('-pi', '--pipe-ipaddress', dest='PipeIPaddress', help='Insert a ip to the ip address table from stdin', required=False, action='store_true')
 parser.add_argument('-pp', '--pipe-organization', dest='pipeOrg', help='Insert a new record(s) to the organization table from stdin', required=False, action='store_true')
 parser.add_argument('-pt', '--pipe-tld', dest='pipeTLD', help='Insert a new record(s) to the TLD_Domains table from stdin', required=False, action='store_true')
 parser.add_argument('-ps', '--pipe-subdomain', dest='pipeSubdomains', help='Insert a new record(s) to the Subdomains table from stdin', required=False, action='store_true')
@@ -234,6 +249,45 @@ def select_all_tld(conn):
                         print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
         else:
             print(RED_COLOR + "[!] No results!")
+            
+            
+def select_all_ip(conn):
+    if args.CSVoutput:
+        cur = conn.cursor()
+        cur.execute("SELECT address, organization_name FROM ip_address join organization USING (organization_id) ORDER BY organization_id ASC")
+        try:
+            with open(args.CSVoutput, "w") as csv_file:
+                csv_writer = csv.writer(csv_file, delimiter=",")
+                csv_writer.writerow([i[0] for i in cur.description])
+                csv_writer.writerows(cur)
+            print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
+        except:
+             print(RED_COLOR + "[!] Error saving file!")
+    if args.SearchTerm:
+        search_term =('%' + args.SearchTerm + '%',)
+        cur = conn.cursor()
+        cur.execute("SELECT address, organization_name FROM ip_address join organization USING (organization_id) WHERE address LIKE ? COLLATE NOCASE", (search_term))
+        rows = cur.fetchall()
+        if rows:
+            for row in rows:
+                print(GREEN_COLOR + row[0] + ', ' + row[1])
+            if (args.countResults):
+                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
+        else:
+            print(RED_COLOR + "[!] No results!")
+    else:
+        cur = conn.cursor()
+        cur.execute("SELECT address, organization_name FROM ip_address join organization USING (organization_id) ORDER BY organization_id ASC")
+        rows = cur.fetchall()
+        
+        if rows:
+            for row in rows:
+                print(GREEN_COLOR + row[0] + ', ' + row[1])
+            if (args.countResults):
+                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
+        else:
+            print(RED_COLOR + "[!] No results!")
+
 
 def select_all_subdomains(conn):
     if args.CSVoutput:
@@ -294,6 +348,31 @@ def select_all_tld_by_organization(conn, organization_name):
                         print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
         else:
             print(RED_COLOR + "[!] No results!")
+            
+def select_ip_by_organization(conn, organization_name):
+    if args.CSVoutput:
+        cur = conn.cursor()
+        cur.execute("SELECT address from ip_address join organization USING (organization_id) where organization.organization_name =? COLLATE NOCASE", ([organization_name]))
+        try:
+            with open(args.CSVoutput, "w") as csv_file:
+                csv_writer = csv.writer(csv_file, delimiter=",")
+                csv_writer.writerow([i[0] for i in cur.description])
+                csv_writer.writerows(cur)
+            print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
+        except:
+             print(RED_COLOR + "[!] Error opening file!")
+    else:
+        cur = conn.cursor()
+        cur.execute("SELECT address from ip_address join organization USING (organization_id) where organization.organization_name =? COLLATE NOCASE", ([organization_name]))
+        rows = cur.fetchall()
+        if rows:
+            for row in rows:
+                print(GREEN_COLOR + row[0])
+            if (args.countResults):
+                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
+        else:
+            print(RED_COLOR + "[!] No results!")
+
 
 def select_all_subdomains_by_organization(conn, organization_name):
     if args.CSVoutput:
@@ -384,6 +463,29 @@ def create_tld(conn, domain, organization_name):
             print(GREEN_COLOR + "[+] TLD Domain '" + domain.lower() + "' added to the " + organization_name + " organization")
             return cur.lastrowid
 
+
+def create_ipaddress(conn, ip_address, organization_name):
+    cur = conn.cursor()
+    cur.execute("SELECT organization_name FROM organization WHERE organization_name=? COLLATE NOCASE", ([organization_name]))
+    result = cur.fetchone()
+    if not result:
+        print(RED_COLOR + "[!] Organization not valid!")
+    else:
+        cur = conn.cursor()
+        cur.execute("SELECT address FROM ip_address WHERE address=?", ([ip_address]))
+        result = cur.fetchone()
+        if result:
+            print(RED_COLOR + "[!] " + ip_address + " already exist")
+        else:
+            sql = """INSERT INTO ip_address(address, organization_id) VALUES(""" + "'" + ip_address + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "' COLLATE NOCASE""))"""
+            cur = conn.cursor()
+            cur.execute(sql)
+            conn.commit()
+            print(GREEN_COLOR + "[+] '" + ip_address + "' added to the " + organization_name + " organization")
+            return cur.lastrowid
+
+
+
 def create_subdomain(conn, subdomain, organization_name):
     cur = conn.cursor()
     cur.execute("SELECT organization_name FROM organization WHERE organization_name=? COLLATE NOCASE", ([organization_name]))
@@ -472,6 +574,14 @@ def main():
                 select_all_subdomains_by_organization(conn,  args.OrganizationName)
         if(args.TLDomain):
             select_all_subdomains_by_tld(conn, args.TLDomain)
+            
+        if(args.SelectIPAddress):
+            if args.removeRecord:
+                deleteRecord(conn, "ip_address", "address", args.removeRecord)
+            elif (args.OrganizationName is None or args.OrganizationName=='all'):
+                select_all_ip(conn)
+            else:
+                select_ip_by_organization(conn, args.OrganizationName)
 
         if (args.SelectQuery):
              query(conn, args.SelectQuery)
@@ -535,6 +645,32 @@ def main():
                         print(RED_COLOR + "[!] Invalid domain name " + "'" + args.CreateSubdomain + "'")
                     else:
                         create_subdomain(conn, args.CreateSubdomain, args.OrganizationName)
+        
+        
+        if (args.CreateIPaddress):
+            if (args.OrganizationName is None):
+                print(RED_COLOR + '[!] Please use -p to specify organization name')
+            else:
+                if args.FileName:
+                    try:
+                        f = open(args.CreateIPaddress, 'rt')
+                        l = f.readline()
+                        while (l):
+                            create_ipaddress(conn, l.strip(), args.OrganizationName)
+                            l = f.readline()
+                        f.close()
+                    except:
+                        print(RED_COLOR +"[!] Error opening file!")
+                else: 
+                    create_ipaddress(conn, args.CreateIPaddress, args.OrganizationName)
+                
+        if (args.PipeIPaddress):
+            if (args.OrganizationName is None):
+                print(RED_COLOR + '[!] Please use -p to specify organization name')
+            else:
+                for line in sys.stdin:  
+                    create_ipaddress(conn, line.strip(), args.OrganizationName)        
+        
         if (args.pipeSubdomains):
             if (args.OrganizationName is None):
                 print(RED_COLOR + '[!] Please use -p to specify organization name')
@@ -544,6 +680,7 @@ def main():
                         print(RED_COLOR + "[!] Invalid domain name " + "'" + line.strip() + "'")
                     else:
                         create_subdomain(conn, line.strip(), args.OrganizationName)
+                        
         if (args.pipeOrg):
             if (args.pipeOrg is None):
                 print(RED_COLOR + '[!] Please specify organization name')
