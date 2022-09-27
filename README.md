@@ -116,9 +116,11 @@ Create Subdomain from file: ```bbDB.py -cs subdomains.txt -p paypal -f```
 
 Create Subdomain from STDIN: ```cat subdomain-list.txt | bbDB.py -ps -p paypal or echo paypal.com | bbDB.py -ps -p paypal```
 
-Insert IP Address: bbDB.py -ci 8.8.8.8 -p paypal
-Insert IP Address from file: bbDB.py -ci ips.txt -p paypal -f
-Insert IP Address from STDIN: cat ip-list.txt | bbDB.py -pi -p paypal or echo 8.8.8.8 | bbDB.py -pi -p paypal
+Insert IP Address: ```bbDB.py -ci 8.8.8.8 -p paypal```
+
+Insert IP Address from file: ```bbDB.py -ci ips.txt -p paypal -f```
+
+Insert IP Address from STDIN: ```cat ip-list.txt | bbDB.py -pi -p paypal or echo 8.8.8.8 | bbDB.py -pi -p paypal```
 
 ### Search Database:
 
