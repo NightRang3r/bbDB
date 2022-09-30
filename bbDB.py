@@ -505,7 +505,7 @@ def create_subdomain(conn, subdomain, organization_name):
             cur.execute("SELECT domain FROM domains WHERE domain=? COLLATE NOCASE", ([tldextract.extract(subdomain).registered_domain]))
             result = cur.fetchone()
             if not result:
-                print(RED_COLOR + "[!] TLD doamin not in DB, not adding subdomain!")
+                print(RED_COLOR + "[!] TLD doamin '" + [tldextract.extract(subdomain).registered_domain] + "' not in DB, not adding subdomain '" + subdomain + "' !")
             else:
                 sql = """INSERT INTO subdomains(subdomain, organization_id, domain_id) VALUES(""" + "'" + subdomain.lower() + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "'" + " COLLATE NOCASE), (SELECT domain_id FROM domains WHERE domain=""" + "'" +  tldextract.extract(subdomain).registered_domain + "'" + "))"""
 
