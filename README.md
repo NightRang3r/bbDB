@@ -3,8 +3,8 @@ Simple Python Script to manage bugbounty programs and subdomains
 
 
 ```
-usage: bbDB.py [-h] [-sp] [-st] [-ss] [-sq SELECTQUERY] [-si] [-cp] [-ct CREATETLD] [-cs CREATESUBDOMAIN] [-ci CREATEIPADDRESS] [-pi] [-pp] [-pt] [-ps] [-c] [-p ORGANIZATIONNAME] [-t SEARCHTERM] [-tl TLDOMAIN] [-f] [-o CSVOUTPUT]
-               [-r REMOVERECORD] [-q] [-nc] [-tg] [-d DATABASE]
+usage: bbDB.py [-h] [-sp] [-st] [-ss] [-sq SELECTQUERY] [-si] [-cp] [-ct CREATETLD] [-cs CREATESUBDOMAIN] [-ci CREATEIPADDRESS] [-pi] [-pp] [-pt] [-ps] [-c] [-p ORGANIZATIONNAME] [-t SEARCHTERM] [-f] [-o CSVOUTPUT] [-r REMOVERECORD]
+               [-q] [-nc] [-tg] [-d DATABASE]
 
 Manage BugBounty DB
 
@@ -39,8 +39,6 @@ options:
                         Set Organization Names, or all
   -t SEARCHTERM, --search-term SEARCHTERM
                         Search table
-  -tl TLDOMAIN, --tld-domain TLDOMAIN
-                        Filter by TLD domain
   -f, --file            Input file
   -o CSVOUTPUT, --output-csv CSVOUTPUT
                         Save results to CSV file
@@ -66,8 +64,6 @@ Show TLD Domains by Organization: ```bbDB.py -st -p paypal```
 
 Show All Subdomains: ```bbDB.py -ss```
 
-Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com```
-
 Show Subdomains by Organization: ```bbDB.py -ss -p paypal```
 
 Show All IP Addresses: ```bbDB.py -si -p```
@@ -91,8 +87,6 @@ Save IP Addresses by Organization: ```bbDB.py -si -p paypal -o results.csv```
 Save All Subdomains: ```bbDB.py -ss -o results.csv```
 
 Save Subdomains by Organization: ```bbDB.py -ss -p paypal -o results.csv```
-
-Show Subdomains by TLD domain: ```bbDB.py -tl paypal.com -o results.csv```
 
 Save Dynamic select query results: ```bbDB.py -sq 'select * from Organization' -o results.csv```
 

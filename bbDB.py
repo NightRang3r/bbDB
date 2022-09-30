@@ -9,7 +9,6 @@ import argparse
 import csv
 import requests
 import validators
-import tldextract
 from colorama import Fore, Style
 from colorama import init
 
@@ -44,7 +43,6 @@ def examples():
     print("Show All TLD Domains: " + YELLOW_COLOR + sys.argv[0] + " -st")
     print("Show TLD Domains by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -st -p paypal")
     print("Show All Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss")
-    print("Show Subdomains by TLD domain: " + YELLOW_COLOR + sys.argv[0] + " -tl paypal.com")
     print("Show Subdomains by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -ss -p paypal")
     print("Show All IP Addresses: " + YELLOW_COLOR  + sys.argv[0] + " -si -p")
     print("Show IP Addresses by Organization: " + YELLOW_COLOR  + sys.argv[0] + " -si -p paypal")
@@ -58,7 +56,6 @@ def examples():
     print("Save IP Addresses by Organization: " + YELLOW_COLOR + sys.argv[0] + " -si -p paypal -o results.csv")
     print("Save All Subdomains: " + YELLOW_COLOR + sys.argv[0] + " -ss -o results.csv")
     print("Save Subdomains by Organization: " + YELLOW_COLOR + sys.argv[0] + " -ss -p paypal -o results.csv")
-    print("Show Subdomains by TLD domain: " + YELLOW_COLOR + sys.argv[0] + " -tl paypal.com -o results.csv")
     print("Save Dynamic select query results: " + YELLOW_COLOR + sys.argv[0] + " -sq 'select * from Organization' -o results.csv" + "\n")
     print("Insert into database")
     print("====================\n")
@@ -107,7 +104,6 @@ parser.add_argument('-ps', '--pipe-subdomain', dest='pipeSubdomains', help='Inse
 parser.add_argument('-c', '--count', dest='countResults', help='Display records count', required=False, action='store_true')
 parser.add_argument('-p', '--organization-name', dest='OrganizationName', help='Set Organization Names, or all', required=False)
 parser.add_argument('-t', '--search-term', dest='SearchTerm', help='Search table', required=False)
-parser.add_argument('-tl', '--tld-domain', dest='TLDomain', help='Filter by TLD domain', required=False)
 parser.add_argument('-f', '--file', dest='FileName', help='Input file', required=False, action='store_true')
 parser.add_argument('-o', '--output-csv', dest='CSVoutput', help='Save results to CSV file', required=False)
 parser.add_argument('-r', '--remove', dest='removeRecord', help='Delete a record from database', required=False)
@@ -399,31 +395,6 @@ def select_all_subdomains_by_organization(conn, organization_name):
         else:
             print(RED_COLOR + "[!] No results!")
             
-def select_all_subdomains_by_tld(conn, domain):
-    if args.CSVoutput:
-        cur = conn.cursor()
-        cur.execute("SELECT subdomain from subdomains where domain_id=(select domain_id from domains where domain =" + "'" + domain + "')")
-        try:
-            with open(args.CSVoutput, "w") as csv_file:
-                csv_writer = csv.writer(csv_file, delimiter=",")
-                csv_writer.writerow([i[0] for i in cur.description])
-                csv_writer.writerows(cur)
-            print(GREEN_COLOR + "Results saved to: " + args.CSVoutput)
-        except:
-             print(RED_COLOR + "[!] Error opening file!")
-             
-             
-    else:
-        cur = conn.cursor()
-        cur.execute("SELECT subdomain from subdomains where domain_id=(select domain_id from domains where domain =" + "'" + domain + "')")
-        rows = cur.fetchall()
-        if rows:
-            for row in rows:
-                print(GREEN_COLOR + row[0])
-            if (args.countResults):
-                        print("\n" + GREEN_COLOR + "[+] " + str(len(rows)) + " record(s) found")
-        else:
-            print(RED_COLOR + "[!] No results!")
 
 def create_organization(conn, organization_name):
     cur = conn.cursor()
@@ -485,7 +456,6 @@ def create_ipaddress(conn, ip_address, organization_name):
             return cur.lastrowid
 
 
-
 def create_subdomain(conn, subdomain, organization_name):
     cur = conn.cursor()
     cur.execute("SELECT organization_name FROM organization WHERE organization_name=? COLLATE NOCASE", ([organization_name]))
@@ -501,21 +471,14 @@ def create_subdomain(conn, subdomain, organization_name):
             print(RED_COLOR + "[!] " + subdomain + " Subdomain already exist")
         
         else:
+            sql = """INSERT INTO subdomains(subdomain, organization_id) VALUES(""" + "'" + subdomain.lower() + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "'" + " COLLATE NOCASE""))"""
             cur = conn.cursor()
-            cur.execute("SELECT domain FROM domains WHERE domain=? COLLATE NOCASE", ([tldextract.extract(subdomain).registered_domain]))
-            result = cur.fetchone()
-            if not result:
-                print(RED_COLOR + "[!] TLD doamin '" + [tldextract.extract(subdomain).registered_domain] + "' not in DB, not adding subdomain '" + subdomain + "' !")
-            else:
-                sql = """INSERT INTO subdomains(subdomain, organization_id, domain_id) VALUES(""" + "'" + subdomain.lower() + "'" + """, (SELECT organization_id FROM organization WHERE organization_name=""" + "'" + organization_name + "'" + " COLLATE NOCASE), (SELECT domain_id FROM domains WHERE domain=""" + "'" +  tldextract.extract(subdomain).registered_domain + "'" + "))"""
-
-                cur = conn.cursor()
-                cur.execute(sql)
-                conn.commit()
-                print(GREEN_COLOR + "[+] '" + subdomain.lower() + "' added to the " + organization_name + " organization subdomain list.")
-                if args.Telegram:
-                    telegram_bot_sendtext(subdomain.lower() + " added to the " + organization_name + " organization subdomain list.")
-                return cur.lastrowid
+            cur.execute(sql)
+            conn.commit()
+            print(GREEN_COLOR + "[+] '" + subdomain.lower() + "' added to the " + organization_name + " organization subdomain list.")
+            if args.Telegram:
+                telegram_bot_sendtext(subdomain.lower() + " added to the " + organization_name + " organization subdomain list.")
+            return cur.lastrowid
 
 def deleteRecord(conn, table, column, data):
     cur = conn.cursor()
@@ -572,8 +535,6 @@ def main():
                 select_all_subdomains(conn)
             else:
                 select_all_subdomains_by_organization(conn,  args.OrganizationName)
-        if(args.TLDomain):
-            select_all_subdomains_by_tld(conn, args.TLDomain)
             
         if(args.SelectIPAddress):
             if args.removeRecord:
@@ -707,4 +668,3 @@ if __name__ == '__main__':
         YELLOW_COLOR = ''
     main()
     init(autoreset=True)
-
